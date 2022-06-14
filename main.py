@@ -90,6 +90,8 @@ def decode_thread(in_queue):
                 keypoint_id += 1
 
             new_keypoints.append(keypoints_with_id)
+        
+        print(new_keypoints)
 
         valid_pairs, invalid_pairs = getValidPairs(outputs, w=nm.inputSize[0], h=nm.inputSize[1], detected_keypoints=new_keypoints)
         newPersonwiseKeypoints = getPersonwiseKeypoints(valid_pairs, invalid_pairs, new_keypoints_list)

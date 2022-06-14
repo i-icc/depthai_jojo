@@ -1,0 +1,10 @@
+version: "3"
+
+services:
+  depthai_jojo:
+    build: ./
+    container_name: depthai_jojo
+    volumes:
+      - ./:/myapp
+    tty: true
+    stdin_open: true

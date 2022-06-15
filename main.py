@@ -15,13 +15,17 @@ with open('./models/jojo_model2.pickle', mode='rb') as fp:
     knn = pickle.load(fp)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-nd', '--no-debug', action="store_true", help="Prevent debug output")
-parser.add_argument('-cam', '--camera', action="store_true", help="Use DepthAI 4K RGB camera for inference (conflicts with -vid)")
-parser.add_argument('-vid', '--video', type=str, help="Path to video file to be used for inference (conflicts with -cam)")
+parser.add_argument('-nd', '--no-debug', action="store_true",
+                    help="Prevent debug output")
+parser.add_argument('-cam', '--camera', action="store_true",
+                    help="Use DepthAI 4K RGB camera for inference (conflicts with -vid)")
+parser.add_argument('-vid', '--video', type=str,
+                    help="Path to video file to be used for inference (conflicts with -cam)")
 args = parser.parse_args()
 
 if not args.camera and not args.video:
-    raise RuntimeError("No source selected. Please use either \"-cam\" to use RGB camera as a source or \"-vid <path>\" to run on video")
+    raise RuntimeError(
+        "No source selected. Please use either \"-cam\" to use RGB camera as a source or \"-vid <path>\" to run on video")
 
 debug = not args.no_debug
 device_info = getDeviceInfo()
@@ -38,7 +42,8 @@ else:
 
 
 colors = [[0, 100, 255], [0, 100, 255], [0, 255, 255], [0, 100, 255], [0, 255, 255], [0, 100, 255], [0, 255, 0],
-          [255, 200, 100], [255, 0, 255], [0, 255, 0], [255, 200, 100], [255, 0, 255], [0, 0, 255], [255, 0, 0],
+          [255, 200, 100], [255, 0, 255], [0, 255, 0], [
+              255, 200, 100], [255, 0, 255], [0, 0, 255], [255, 0, 0],
           [200, 200, 0], [255, 0, 0], [200, 200, 0], [0, 0, 0]]
 POSE_PAIRS = [[1, 2], [1, 5], [2, 3], [3, 4], [5, 6], [6, 7], [1, 8], [8, 9], [9, 10], [1, 11], [11, 12], [12, 13],
               [1, 0], [0, 14], [14, 16], [0, 15], [15, 17], [2, 17], [5, 16]]
@@ -60,8 +65,10 @@ else:
     cap = cv2.VideoCapture(str(Path(args.video).resolve().absolute()))
     fps = FPSHandler(cap)
 
-nn = nm.createNN(pm.pipeline, pm.nodes, source=Previews.color.name if args.camera else "host", blobPath=Path(blob_path), fullFov=True)
+nn = nm.createNN(pm.pipeline, pm.nodes, source=Previews.color.name if args.camera else "host",
+                 blobPath=Path(blob_path), fullFov=True)
 pm.addNn(nn=nn)
+
 
 def decode_thread(in_queue):
     global keypoints_list, detected_keypoints, personwiseKeypoints
@@ -72,8 +79,10 @@ def decode_thread(in_queue):
         except RuntimeError:
             return
         fps.tick('nn')
-        heatmaps = np.array(raw_in.getLayerFp16('Mconv7_stage2_L2')).reshape((1, 19, 32, 57))
-        pafs = np.array(raw_in.getLayerFp16('Mconv7_stage2_L1')).reshape((1, 38, 32, 57))
+        heatmaps = np.array(raw_in.getLayerFp16(
+            'Mconv7_stage2_L2')).reshape((1, 19, 32, 57))
+        pafs = np.array(raw_in.getLayerFp16(
+            'Mconv7_stage2_L1')).reshape((1, 38, 32, 57))
         heatmaps = heatmaps.astype('float32')
         pafs = pafs.astype('float32')
         outputs = np.concatenate((heatmaps, pafs), axis=1)
@@ -95,10 +104,13 @@ def decode_thread(in_queue):
 
             new_keypoints.append(keypoints_with_id)
 
-        valid_pairs, invalid_pairs = getValidPairs(outputs, w=nm.inputSize[0], h=nm.inputSize[1], detected_keypoints=new_keypoints)
-        newPersonwiseKeypoints = getPersonwiseKeypoints(valid_pairs, invalid_pairs, new_keypoints_list)
+        valid_pairs, invalid_pairs = getValidPairs(
+            outputs, w=nm.inputSize[0], h=nm.inputSize[1], detected_keypoints=new_keypoints)
+        newPersonwiseKeypoints = getPersonwiseKeypoints(
+            valid_pairs, invalid_pairs, new_keypoints_list)
 
-        detected_keypoints, keypoints_list, personwiseKeypoints = (new_keypoints, new_keypoints_list, newPersonwiseKeypoints)
+        detected_keypoints, keypoints_list, personwiseKeypoints = (
+            new_keypoints, new_keypoints_list, newPersonwiseKeypoints)
 
 
 def show(frame):
@@ -113,7 +125,8 @@ def show(frame):
 
         for i in range(18):
             for j in range(len(detected_keypoints[i])):
-                cv2.circle(frame, scale(detected_keypoints[i][j][0:2]), 5, colors[i], -1, cv2.LINE_AA)
+                cv2.circle(frame, scale(
+                    detected_keypoints[i][j][0:2]), 5, colors[i], -1, cv2.LINE_AA)
         for i in range(17):
             for n in range(len(personwiseKeypoints)):
                 index = personwiseKeypoints[n][np.array(POSE_PAIRS[i])]
@@ -121,9 +134,24 @@ def show(frame):
                     continue
                 B = np.int32(keypoints_list[index.astype(int), 0])
                 A = np.int32(keypoints_list[index.astype(int), 1])
-                cv2.line(frame, scale((B[0], A[0])), scale((B[1], A[1])), colors[i], 3, cv2.LINE_AA)
+                cv2.line(frame, scale((B[0], A[0])), scale(
+                    (B[1], A[1])), colors[i], 3, cv2.LINE_AA)
 
-def jojo(frame):
+
+def put_stand(frame, pose, size, scale_factor, start):
+    if pose == 0:
+        return
+    file_name = f"./img/{pose}.png"
+    
+
+
+def get_distans(point0, point1):
+    a = ((point1[0][0] - point0[0][0]) ** 2 +
+         (point1[0][1] - point0[0][1]) ** 2)**(1/2)
+    return int(a)
+
+
+def jojo(frame, debug):
     global keypoints_list, detected_keypoints, personwiseKeypoints, nm
 
     if keypoints_list is not None and detected_keypoints is not None and personwiseKeypoints is not None:
@@ -131,17 +159,29 @@ def jojo(frame):
         pose = knn.predict(np.array([angles]))
 
         scale_factor = frame.shape[0] / nm.inputSize[1]
-        offset_w = int(frame.shape[1] - nm.inputSize[0] * scale_factor) // 2
+        size = nm.inputSize[1]
+        if len(detected_keypoints[1]) > 0:
+            if len(detected_keypoints[2]) > 0:
+                size = min(size, get_distans(
+                    detected_keypoints[2], detected_keypoints[1]))
+            if len(detected_keypoints[5]) > 0:
+                size = min(size, get_distans(
+                    detected_keypoints[5], detected_keypoints[1]))
 
-        def scale(point):
-            return int(point[0] * scale_factor) + offset_w, int(point[1] * scale_factor)
+        if debug and len(detected_keypoints[1]) > 0:
+            cv2.putText(frame, f"{pose}", (int(detected_keypoints[1][0][0]*scale_factor), int(
+                detected_keypoints[1][0][1]*scale_factor)), cv2.FONT_HERSHEY_SIMPLEX, 5, (255, 0, 0), 10)
 
-        cv2.putText(frame, str(pose), (50, 600), cv2.FONT_HERSHEY_SIMPLEX, 30, (255, 0, 0),30)
+        if size != nm.inputSize[1]:
+            put_stand(frame, pose[0], size, scale_factor,
+                      detected_keypoints[1][0])
+
 
 print("Starting pipeline...")
 with dai.Device(pm.pipeline, device_info) as device:
     if args.camera:
-        pv = PreviewManager(display=[Previews.color.name], nnSource=Previews.color.name, fpsHandler=fps)
+        pv = PreviewManager(
+            display=[Previews.color.name], nnSource=Previews.color.name, fpsHandler=fps)
         pv.createQueues(device)
     nm.createQueues(device)
     seq_num = 1
@@ -152,7 +192,6 @@ with dai.Device(pm.pipeline, device_info) as device:
     def should_run():
         return cap.isOpened() if args.video else True
 
-
     try:
         while should_run():
             fps.nextIter()
@@ -161,10 +200,12 @@ with dai.Device(pm.pipeline, device_info) as device:
                 frame = pv.get(Previews.color.name)
                 if debug:
                     show(frame)
-                    jojo(frame)
-                    cv2.putText(frame, f"RGB FPS: {round(fps.tickFps(Previews.color.name), 1)}", (5, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0))
-                    cv2.putText(frame, f"NN FPS:  {round(fps.tickFps('nn'), 1)}", (5, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0))
-                    pv.showFrames()
+                    cv2.putText(frame, f"RGB FPS: {round(fps.tickFps(Previews.color.name), 1)}", (
+                        5, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0))
+                    cv2.putText(frame, f"NN FPS:  {round(fps.tickFps('nn'), 1)}", (
+                        5, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0))
+                jojo(frame, debug)
+                pv.showFrames()
             if not args.camera:
                 read_correctly, frame = cap.read()
 
@@ -176,8 +217,10 @@ with dai.Device(pm.pipeline, device_info) as device:
 
                 if debug:
                     show(frame)
-                    cv2.putText(frame, f"RGB FPS: {round(fps.tickFps('host'), 1)}", (5, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0))
-                    cv2.putText(frame, f"NN FPS:  {round(fps.tickFps('nn'), 1)}", (5, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0))
+                    cv2.putText(frame, f"RGB FPS: {round(fps.tickFps('host'), 1)}", (
+                        5, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0))
+                    cv2.putText(frame, f"NN FPS:  {round(fps.tickFps('nn'), 1)}", (
+                        5, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0))
                     cv2.imshow("rgb", frame)
 
             key = cv2.waitKey(1)

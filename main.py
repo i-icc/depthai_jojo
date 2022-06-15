@@ -136,17 +136,7 @@ def jojo(frame):
         def scale(point):
             return int(point[0] * scale_factor) + offset_w, int(point[1] * scale_factor)
 
-        for i in range(18):
-            for j in range(len(detected_keypoints[i])):
-                cv2.circle(frame, scale(detected_keypoints[i][j][0:2]), 5, colors[i], -1, cv2.LINE_AA)
-        for i in range(17):
-            for n in range(len(personwiseKeypoints)):
-                index = personwiseKeypoints[n][np.array(POSE_PAIRS[i])]
-                if -1 in index:
-                    continue
-                B = np.int32(keypoints_list[index.astype(int), 0])
-                A = np.int32(keypoints_list[index.astype(int), 1])
-                cv2.line(frame, scale((B[0], A[0])), scale((B[1], A[1])), colors[i], 3, cv2.LINE_AA)
+        # cv2
 
 print("Starting pipeline...")
 with dai.Device(pm.pipeline, device_info) as device:

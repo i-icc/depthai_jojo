@@ -11,7 +11,7 @@ import depthai as dai
 import numpy as np
 import pickle
 
-with open('./models/jojo_model.pickle', mode='rb') as fp:
+with open('./models/jojo_model2.pickle', mode='rb') as fp:
     knn = pickle.load(fp)
 
 parser = argparse.ArgumentParser()
@@ -128,7 +128,7 @@ def jojo(frame):
 
     if keypoints_list is not None and detected_keypoints is not None and personwiseKeypoints is not None:
         angles = getKeyangles(detected_keypoints)
-        knn.predict(angles)
+        pose = knn.predict(np.array([angles]))
 
         scale_factor = frame.shape[0] / nm.inputSize[1]
         offset_w = int(frame.shape[1] - nm.inputSize[0] * scale_factor) // 2
@@ -136,7 +136,7 @@ def jojo(frame):
         def scale(point):
             return int(point[0] * scale_factor) + offset_w, int(point[1] * scale_factor)
 
-        # cv2
+        cv2.putText(frame, str(pose), (50, 600), cv2.FONT_HERSHEY_SIMPLEX, 30, (255, 0, 0),30)
 
 print("Starting pipeline...")
 with dai.Device(pm.pipeline, device_info) as device:
@@ -161,6 +161,7 @@ with dai.Device(pm.pipeline, device_info) as device:
                 frame = pv.get(Previews.color.name)
                 if debug:
                     show(frame)
+                    jojo(frame)
                     cv2.putText(frame, f"RGB FPS: {round(fps.tickFps(Previews.color.name), 1)}", (5, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0))
                     cv2.putText(frame, f"NN FPS:  {round(fps.tickFps('nn'), 1)}", (5, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0))
                     pv.showFrames()

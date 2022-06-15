@@ -5,7 +5,7 @@ from pathlib import Path
 from depthai_sdk.managers import PipelineManager, NNetManager, BlobManager, PreviewManager
 from depthai_sdk import FPSHandler, Previews, getDeviceInfo, downloadYTVideo
 
-from pose import getKeypoints, getValidPairs, getPersonwiseKeypoints
+from pose import getKeyangles, getKeypoints, getValidPairs, getPersonwiseKeypoints
 import cv2
 import depthai as dai
 import numpy as np
@@ -90,8 +90,6 @@ def decode_thread(in_queue):
                 keypoint_id += 1
 
             new_keypoints.append(keypoints_with_id)
-        
-        print(new_keypoints)
 
         valid_pairs, invalid_pairs = getValidPairs(outputs, w=nm.inputSize[0], h=nm.inputSize[1], detected_keypoints=new_keypoints)
         newPersonwiseKeypoints = getPersonwiseKeypoints(valid_pairs, invalid_pairs, new_keypoints_list)
@@ -103,6 +101,9 @@ def show(frame):
     global keypoints_list, detected_keypoints, personwiseKeypoints, nm
 
     if keypoints_list is not None and detected_keypoints is not None and personwiseKeypoints is not None:
+        angles = getKeyangles(detected_keypoints)
+        print(angles)
+
         scale_factor = frame.shape[0] / nm.inputSize[1]
         offset_w = int(frame.shape[1] - nm.inputSize[0] * scale_factor) // 2
 

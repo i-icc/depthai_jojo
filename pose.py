@@ -1,12 +1,13 @@
 import cv2
 import numpy as np
+import math
 
 keypointsMapping = ['Nose', 'Neck', 'R-Sho', 'R-Elb', 'R-Wr', 'L-Sho', 'L-Elb', 'L-Wr', 'R-Hip', 'R-Knee', 'R-Ank',
                     'L-Hip', 'L-Knee', 'L-Ank', 'R-Eye', 'L-Eye', 'R-Ear', 'L-Ear']
 POSE_PAIRS = [[1, 2], [1, 5], [2, 3], [3, 4], [5, 6], [6, 7], [1, 8], [8, 9], [9, 10], [1, 11], [11, 12], [12, 13],
               [1, 0], [0, 14], [14, 16], [0, 15], [15, 17], [2, 17], [5, 16]]
 ANGLE_PAIRS = [[0, 1, 2], [0, 1, 5], [1, 5, 6], [5, 6, 7], [1, 2, 3], [2, 3, 4],
-              [2, 1, 8], [8, 9, 10], [3, 1, 11], [11, 12, 13]]
+              [2, 1, 8], [8, 9, 10], [3, 1, 11], [11, 12, 13]] # ポイント0, 1, 2 で 1 がジョイント
 mapIdx = [[31, 32], [39, 40], [33, 34], [35, 36], [41, 42], [43, 44], [19, 20], [21, 22], [23, 24], [25, 26], [27, 28],
           [29, 30], [47, 48], [49, 50], [53, 54], [51, 52], [55, 56], [37, 38], [45, 46]]
 colors = [[0, 100, 255], [0, 100, 255], [0, 255, 255], [0, 100, 255], [0, 255, 255], [0, 100, 255], [0, 255, 0],
@@ -15,10 +16,20 @@ colors = [[0, 100, 255], [0, 100, 255], [0, 255, 255], [0, 100, 255], [0, 255, 2
 
 
 def calcAngle(point0, point1, point2):
-    pass
+    # print(point0,point1,point2)
+    try:
+        a = (point1[0][0] - point0[0][0]) ** 2 + (point1[0][1] - point0[0][1]) ** 2
+        b = (point1[0][0] - point2[0][0]) ** 2 + (point1[0][1] - point2[0][1]) ** 2
+        c = (point2[0][0] - point0[0][0]) ** 2 + (point2[0][1] - point0[0][1]) ** 2
+        angle = math.acos((a + b - c) / math.sqrt(4 * a * b)) * 180 / math.pi
+    except:
+        return 0
+    return int(angle)
 
 def getKeyangles(keypoints): # main.py new_points_list
     keyangeles = []
+    for angle in ANGLE_PAIRS:
+        keyangeles.append(calcAngle(keypoints[angle[0]], keypoints[angle[1]], keypoints[angle[2]]))
     return keyangeles
 
 def getKeypoints(probMap, threshold=0.2):

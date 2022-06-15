@@ -9,6 +9,10 @@ from pose import getKeyangles, getKeypoints, getValidPairs, getPersonwiseKeypoin
 import cv2
 import depthai as dai
 import numpy as np
+import pickle
+
+with open('./models/jojo_model.pickle', mode='rb') as fp:
+    knn = pickle.load(fp)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-nd', '--no-debug', action="store_true", help="Prevent debug output")
@@ -101,9 +105,6 @@ def show(frame):
     global keypoints_list, detected_keypoints, personwiseKeypoints, nm
 
     if keypoints_list is not None and detected_keypoints is not None and personwiseKeypoints is not None:
-        angles = getKeyangles(detected_keypoints)
-        print(angles)
-
         scale_factor = frame.shape[0] / nm.inputSize[1]
         offset_w = int(frame.shape[1] - nm.inputSize[0] * scale_factor) // 2
 
@@ -122,6 +123,30 @@ def show(frame):
                 A = np.int32(keypoints_list[index.astype(int), 1])
                 cv2.line(frame, scale((B[0], A[0])), scale((B[1], A[1])), colors[i], 3, cv2.LINE_AA)
 
+def jojo(frame):
+    global keypoints_list, detected_keypoints, personwiseKeypoints, nm
+
+    if keypoints_list is not None and detected_keypoints is not None and personwiseKeypoints is not None:
+        angles = getKeyangles(detected_keypoints)
+        knn.predict(angles)
+
+        scale_factor = frame.shape[0] / nm.inputSize[1]
+        offset_w = int(frame.shape[1] - nm.inputSize[0] * scale_factor) // 2
+
+        def scale(point):
+            return int(point[0] * scale_factor) + offset_w, int(point[1] * scale_factor)
+
+        for i in range(18):
+            for j in range(len(detected_keypoints[i])):
+                cv2.circle(frame, scale(detected_keypoints[i][j][0:2]), 5, colors[i], -1, cv2.LINE_AA)
+        for i in range(17):
+            for n in range(len(personwiseKeypoints)):
+                index = personwiseKeypoints[n][np.array(POSE_PAIRS[i])]
+                if -1 in index:
+                    continue
+                B = np.int32(keypoints_list[index.astype(int), 0])
+                A = np.int32(keypoints_list[index.astype(int), 1])
+                cv2.line(frame, scale((B[0], A[0])), scale((B[1], A[1])), colors[i], 3, cv2.LINE_AA)
 
 print("Starting pipeline...")
 with dai.Device(pm.pipeline, device_info) as device:

@@ -10,9 +10,11 @@ import cv2
 import depthai as dai
 import numpy as np
 import pickle
+import random
 
 with open('./models/jojo_model2.pickle', mode='rb') as fp:
     knn = pickle.load(fp)
+gogogo = 2
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-nd', '--no-debug', action="store_true",
@@ -26,6 +28,9 @@ args = parser.parse_args()
 if not args.camera and not args.video:
     raise RuntimeError(
         "No source selected. Please use either \"-cam\" to use RGB camera as a source or \"-vid <path>\" to run on video")
+gogogo = cv2.imread(
+    "./img/gogogo.png", cv2.IMREAD_UNCHANGED
+)  # アルファチャンネル込みで読み込む
 
 debug = not args.no_debug
 device_info = getDeviceInfo()
@@ -142,7 +147,47 @@ def put_stand(frame, pose, size, scale_factor, start):
     if pose == 0:
         return
     file_name = f"./img/{pose}.png"
-    
+    width = frame.shape[1]
+    height = frame.shape[0]
+
+    stand = cv2.imread(
+        file_name, cv2.IMREAD_UNCHANGED
+    )  # アルファチャンネル込みで読み込む
+
+    # put stand
+    try:
+        size = int(scale_factor * size)
+        rate = size/stand.shape[1]
+        re_size = (size, int(stand.shape[0]*rate))
+        stand = cv2.resize(stand, re_size)
+
+        xx1 = int(start[0] * scale_factor)
+        yy1 = int(start[1] * scale_factor) - size//3
+
+        yy2 = min(yy1 + stand.shape[0], height-1)
+        xx2 = min(xx1 + stand.shape[1], width-1)
+
+        frame[yy1:yy2, xx1:xx2] = frame[yy1:yy2, xx1:xx2] * (
+            1 - stand[:, :, 3:] / 255
+        ) + stand[:, :, :3] * (stand[:, :, 3:] / 255)
+    except:
+        import traceback
+        traceback.print_exc()
+
+    # put gogogogog
+    try:
+        size = (width-10, height-10)
+        gogo = cv2.resize(gogogo, size)
+
+        (xx1, yy1) = (random.randint(0, 10), random.randint(0, 10))
+        yy2 = yy1 + height - 10
+        xx2 = xx1 + width - 10
+        frame[yy1:yy2, xx1:xx2] = frame[yy1:yy2, xx1:xx2] * (
+            1 - gogo[:, :, 3:] / 255
+        ) + gogo[:, :, :3] * (gogo[:, :, 3:] / 255)
+    except:
+        import traceback
+        traceback.print_exc()
 
 
 def get_distans(point0, point1):
@@ -173,7 +218,7 @@ def jojo(frame, debug):
                 detected_keypoints[1][0][1]*scale_factor)), cv2.FONT_HERSHEY_SIMPLEX, 5, (255, 0, 0), 10)
 
         if size != nm.inputSize[1]:
-            put_stand(frame, pose[0], size, scale_factor,
+            put_stand(frame, pose[0], size*6, scale_factor,
                       detected_keypoints[1][0])
 
 

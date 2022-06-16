@@ -7,7 +7,7 @@ if __name__ == "__main__":
             writer = csv.writer(f)
             # writer.writerow(["id", "people", "Giorno", "Jonathan"])
             writer.writerow(["id", "judge"])
-            for i in range(331):
+            for i in range(383):
                 # writer.writerow([i, -1, -1, -1])
                 if i < 81:
                     writer.writerow([i, 0])
@@ -18,7 +18,8 @@ if __name__ == "__main__":
                 elif i < 257:
                     writer.writerow([i, 4])
                 elif i < 306:
-                    writer.writerow([i, 3])
+                    writer.writerow([i, 1])
                 elif i < 331:
                     writer.writerow([i, 0])
-                    
+                elif i < 383:
+                    writer.writerow([i, 3])

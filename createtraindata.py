@@ -127,8 +127,8 @@ def show(frame):
                 A = np.int32(keypoints_list[index.astype(int), 1])
                 cv2.line(frame, scale((B[0], A[0])), scale((B[1], A[1])), colors[i], 3, cv2.LINE_AA)
 
-        cv2.imwrite(f"./train_data/img2/{file_num}.png",frame)
-        with open(f"./train_data/angle2/{file_num}.txt", "w") as f:
+        cv2.imwrite(f"./train_data/img/{file_num}.png",frame)
+        with open(f"./train_data/angles/{file_num}.txt", "w") as f:
             print(angles)
             f.writelines(",".join([str(i) for i in angles]))
             pass

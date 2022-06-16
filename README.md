@@ -4,8 +4,11 @@
 
 ## Usage
 ```
-$ git clone 'this page'
+$ git clone https://github.com/i-icc/depthai_jojo.git
 $ cd depthai_jojo
 $ python main.py -cam
 $ python main.py -vid ./movies/input/001.mov
 ```
+
+骨格を表示しない場合は nd オプションをつける
+`$ python main.py -cam -nd`

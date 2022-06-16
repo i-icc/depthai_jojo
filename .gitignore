@@ -1,3 +1,4 @@
 __pycache__/
 movies/input/
-train_data/
+train_data/img/
+train_data/angles/

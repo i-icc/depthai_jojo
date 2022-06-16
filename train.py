@@ -11,7 +11,7 @@ def main():
     print(n)
     datas = np.empty((n, 10), float)
     for i in targets_data["id"]:
-        filename = f"./train_data/angle2/{i}.txt"
+        filename = f"./train_data/angles/{i}.txt"
         f = open(filename, "r")
         line = f.readline().split(",")
         try:
@@ -23,7 +23,7 @@ def main():
     knn = KNeighborsClassifier(n_neighbors=3)
     knn.fit(datas, targets_data["judge"])
 
-    with open('./models/jojo_model2.pickle', mode='wb') as fp:
+    with open('./models/jojo_model3.pickle', mode='wb') as fp:
         pickle.dump(knn, fp)
 
 if __name__ == "__main__":

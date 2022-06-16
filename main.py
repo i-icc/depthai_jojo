@@ -12,7 +12,7 @@ import numpy as np
 import pickle
 import random
 
-with open('./models/jojo_model2.pickle', mode='rb') as fp:
+with open('./models/jojo_model3.pickle', mode='rb') as fp:
     knn = pickle.load(fp)
 gogogo = 2
 

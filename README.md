@@ -6,6 +6,7 @@
 ```
 $ git clone https://github.com/i-icc/depthai_jojo.git
 $ cd depthai_jojo
+$ python -m pip install -r requirements.txt
 $ python main.py -cam
 $ python main.py -vid ./movies/input/001.mov
 ```
